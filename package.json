@@ -1,0 +1,23 @@
+{
+  "name": "basic",
+  "version": "1.0.0",
+  "description": "Basic BackendApp",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SOKllc/BE_Basic.git"
+  },
+  "author": "SOKllc",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SOKllc/BE_Basic/issues"
+  },
+  "homepage": "https://github.com/SOKllc/BE_Basic#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
