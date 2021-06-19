@@ -4,9 +4,8 @@ const cors = require("cors");
 
 app.use(cors());
 
-app.get("/", (req, res) => {
-  res.send("Welcome to Basic Project...");
-});
+const Routes = require("./Routes/index");
+app.use("/", Routes);
 
 const PORT = process.env.PORT || 3000;
 
