@@ -5,7 +5,7 @@ const { MSSQLConnection } = require("../../../Connections/MSSQL/Connection");
 const express = require("express");
 const router = express.Router();
 
-let SRVRes = { WelcomeMessage: `Welcome to ${currentPage}...` };
+let SRVRes = { WelcomeMessage: `Welcome to ${currentPage} page...`, Error: false };
 
 router.get("/", (req, res, next) => {
   MSSQLConnection.connect()

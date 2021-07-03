@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 const Home = require("./Defaults/Home/Home");
-const Preferance = require("./Defaults/Preferance/Preferance");
+const Preferances = require("./Defaults/Preferances/Preferances");
 
 router.use("/", Home);
-router.use("/Preferance", Preferance);
+router.use("/Preferances", Preferances);
 
 module.exports = router;
