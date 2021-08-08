@@ -23,9 +23,12 @@ router.get("/", (req, res, next) => {
           MSSQLConnection.close();
           SRVRes = {
             ...SRVRes,
-            ConnectionStatus: true,
-            ConnectionMessage: "MSSQL is Connected...",
-            ConnectionData: result,
+            Error: false,
+            Connection: {
+              Status: true,
+              Message: "MSSQL is Connected...",
+              Data: result.recordset,
+            },
           };
           res.send(SRVRes);
         })
@@ -34,7 +37,7 @@ router.get("/", (req, res, next) => {
           SRVRes = {
             ...SRVRes,
             Error: true,
-            ConnectionData: {
+            Connection: {
               Code: err.code,
               Name: err.name,
               Message: err.message,
@@ -48,7 +51,54 @@ router.get("/", (req, res, next) => {
       SRVRes = {
         ...SRVRes,
         Error: true,
-        ConnectionData: {
+        Connection: {
+          Code: err.code,
+          Name: err.name,
+          Message: err.message,
+        },
+      };
+      res.send(SRVRes);
+    });
+});
+
+router.get("/:ID", (req, res, next) => {
+  MSSQLConnection.connect()
+    .then(() => {
+      sqlString = `SELECT * FROM [${currentPage}] WHERE [${currentPage}].ID = ${req.params.ID}`;
+      MSSQLRequest.query(sqlString)
+        .then((result) => {
+          MSSQLConnection.close();
+          SRVRes = {
+            ...SRVRes,
+            Error: false,
+            Connection: {
+              Status: true,
+              Message: "MSSQL is Connected...",
+              Data: result.recordset,
+            },
+          };
+          res.send(SRVRes);
+        })
+        .catch((err) => {
+          MSSQLConnection.close();
+          SRVRes = {
+            ...SRVRes,
+            Error: true,
+            Connection: {
+              Code: err.code,
+              Name: err.name,
+              Message: err.message,
+            },
+          };
+          res.send(SRVRes);
+        });
+    })
+    .catch((err) => {
+      MSSQLConnection.close();
+      SRVRes = {
+        ...SRVRes,
+        Error: true,
+        Connection: {
           Code: err.code,
           Name: err.name,
           Message: err.message,
@@ -64,20 +114,26 @@ router.post("/", (req, res, next) => {
     .then(() => {
       let recordset = req.body;
       let fields = Object.keys(recordset);
-      let fieldsValues = fields.map((field) => {
-        return recordset[field];
+      let filedsNames = [];
+      let fieldsValues = [];
+      fields.map((field) => {
+        filedsNames.push("[" + field + "]");
+        fieldsValues.push("'" + recordset[field] + "'");
       });
-      let sqlString = `INSERT INTO [${currentPage}] ([Name], [isAdmin]) VALUES ('${
-        recordset.Name
-      }', ${recordset.isAdmin ? 1 : 0})`;
+      filedsNames = filedsNames.join(", ");
+      fieldsValues = fieldsValues.join(", ");
+      let sqlString = `INSERT INTO [${currentPage}] (${filedsNames}) VALUES (${fieldsValues})`;
       MSSQLRequest.query(sqlString)
         .then((result) => {
           MSSQLConnection.close();
           SRVRes = {
             ...SRVRes,
-            ConnectionStatus: true,
-            ConnectionMessage: "MSSQL is Connected...",
-            ConnectionData: result,
+            Error: false,
+            Connection: {
+              Status: true,
+              Message: "MSSQL is Connected...",
+              Data: result.recordset,
+            },
           };
           res.send(SRVRes);
         })
@@ -86,7 +142,7 @@ router.post("/", (req, res, next) => {
           SRVRes = {
             ...SRVRes,
             Error: true,
-            ConnectionData: {
+            Connection: {
               Code: err.code,
               Name: err.name,
               Message: err.message,
@@ -100,7 +156,7 @@ router.post("/", (req, res, next) => {
       SRVRes = {
         ...SRVRes,
         Error: true,
-        ConnectionData: {
+        Connection: {
           Code: err.code,
           Name: err.name,
           Message: err.message,
@@ -114,27 +170,27 @@ router.post("/", (req, res, next) => {
 router.put("/:ID", (req, res, next) => {
   MSSQLConnection.connect()
     .then(() => {
+      let reqID = req.params.ID;
       let recordset = req.body;
       let fields = Object.keys(recordset);
-      let fieldsValues = fields.map((field) => {
-        return recordset[field];
+      let fieldsEditString = [];
+      fields.map((field) => {
+        fieldsEditString.push(`[${field}] = '${recordset[field]}'`);
       });
-      let reqID = recordset.ID;
-      let sqlString = `UPDATE [${currentPage}] SET [Name] = '${
-        recordset.Name
-      }' , [Password] = '${recordset.Password}' , [Active] = ${
-        recordset.Active ? 1 : 0
-      } , [isAdmin] = ${
-        recordset.isAdmin ? 1 : 0
-      } WHERE [${currentPage}].ID = ${reqID}`;
+      fieldsEditString = fieldsEditString.join(", ");
+      let conditionString = `[${currentPage}].ID = ${reqID}`;
+      let sqlString = `UPDATE [${currentPage}] SET ${fieldsEditString} WHERE ${conditionString}`;
       MSSQLRequest.query(sqlString)
         .then((result) => {
           MSSQLConnection.close();
           SRVRes = {
             ...SRVRes,
-            ConnectionStatus: true,
-            ConnectionMessage: "MSSQL is Connected...",
-            ConnectionData: result,
+            Error: false,
+            Connection: {
+              Status: true,
+              Message: "MSSQL is Connected...",
+              Data: result.recordset,
+            },
           };
           res.send(SRVRes);
         })
@@ -143,7 +199,7 @@ router.put("/:ID", (req, res, next) => {
           SRVRes = {
             ...SRVRes,
             Error: true,
-            ConnectionData: {
+            Connection: {
               Code: err.code,
               Name: err.name,
               Message: err.message,
@@ -157,7 +213,7 @@ router.put("/:ID", (req, res, next) => {
       SRVRes = {
         ...SRVRes,
         Error: true,
-        ConnectionData: {
+        Connection: {
           Code: err.code,
           Name: err.name,
           Message: err.message,
@@ -173,15 +229,17 @@ router.delete("/:ID", (req, res, next) => {
     .then(() => {
       let reqID = req.params.ID;
       let sqlString = `DELETE FROM [${currentPage}] WHERE [${currentPage}].ID = ${reqID}`;
-      console.log(sqlString);
       MSSQLRequest.query(sqlString)
         .then((result) => {
           MSSQLConnection.close();
           SRVRes = {
             ...SRVRes,
-            ConnectionStatus: true,
-            ConnectionMessage: "MSSQL is Connected...",
-            ConnectionData: result,
+            Error: false,
+            Connection: {
+              Status: true,
+              Message: "MSSQL is Connected...",
+              Data: result.recordset,
+            },
           };
           res.send(SRVRes);
         })
@@ -190,7 +248,7 @@ router.delete("/:ID", (req, res, next) => {
           SRVRes = {
             ...SRVRes,
             Error: true,
-            ConnectionData: {
+            Connection: {
               Code: err.code,
               Name: err.name,
               Message: err.message,
@@ -204,7 +262,7 @@ router.delete("/:ID", (req, res, next) => {
       SRVRes = {
         ...SRVRes,
         Error: true,
-        ConnectionData: {
+        Connection: {
           Code: err.code,
           Name: err.name,
           Message: err.message,

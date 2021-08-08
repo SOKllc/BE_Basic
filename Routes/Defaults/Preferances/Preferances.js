@@ -22,9 +22,11 @@ router.get("/", (req, res, next) => {
           MSSQLConnection.close();
           SRVRes = {
             ...SRVRes,
-            ConnectionStatus: true,
-            ConnectionMessage: "MSSQL is Connected...",
-            ConnectionData: result,
+            Connection: {
+              Status: true,
+              Message: "MSSQL is Connected...",
+              Data: result.recordset,
+            },
           };
           res.send(SRVRes);
         })
@@ -33,10 +35,10 @@ router.get("/", (req, res, next) => {
           SRVRes = {
             ...SRVRes,
             Error: true,
-            ConnectionData: {
+            Connection: {
               Code: err.code,
               Name: err.name,
-              Message: err.message,
+              Message: err.message
             },
           };
           res.send(SRVRes);
